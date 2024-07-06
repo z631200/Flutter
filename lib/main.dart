@@ -1,31 +1,39 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(const MyApp());
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const NavigationExample(),
-      
-      );
+      theme: ThemeData(
+        navigationBarTheme: NavigationBarThemeData(
+          labelTextStyle: WidgetStateProperty.all(
+            TextStyle(color: Colors.white), // Set your desired text color here
+          ),
+        ),
+
+      ),
+      home: Scaffold(
+        body: Navigation()
+      ),
+    );
   }
 }
 
-class NavigationExample extends StatefulWidget {
-  const NavigationExample({super.key});
+class Navigation extends StatefulWidget {
+  const Navigation({super.key});
 
   @override
-  State<NavigationExample> createState() => _NavigationExampleState();
+  State<Navigation> createState() => _NavigationState();
 }
 
-class _NavigationExampleState extends State<NavigationExample> {
+class _NavigationState extends State<Navigation> {
   int currentPageIndex = 0;
   NavigationDestinationLabelBehavior labelBehavior =
       NavigationDestinationLabelBehavior.alwaysShow;
+
 
   final List<Widget> pages = [
     CourseManagementPage(),
@@ -36,11 +44,9 @@ class _NavigationExampleState extends State<NavigationExample> {
   @override
   Widget build(BuildContext context) {
 
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
       bottomNavigationBar: NavigationBar(
-        backgroundColor: Color.fromARGB(255, 88, 228, 236),
+        backgroundColor: Color.fromARGB(255, 48, 48, 48),
         labelBehavior: labelBehavior,
         selectedIndex: currentPageIndex,
         onDestinationSelected: (int index) {
@@ -53,6 +59,7 @@ class _NavigationExampleState extends State<NavigationExample> {
             selectedIcon: Icon(Icons.class_rounded),
             icon: Icon(Icons.class_outlined),
             label: '課程管理',
+            
           ),
           NavigationDestination(
             selectedIcon: Icon(Icons.design_services_rounded),
@@ -74,14 +81,6 @@ class _NavigationExampleState extends State<NavigationExample> {
   }
 }
 
-
-// class CourseManagementPage extends StatelessWidget {
-//   const CourseManagementPage({super.key});
-
-//   @override
-//   Widget build(BuildContext context) => Center(child: Text('課程管理 Page'));
-// }
-
 class PromptManagementPage extends StatelessWidget {
   const PromptManagementPage({super.key});
 
@@ -96,9 +95,6 @@ class PersonalInfoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Image Example'),
-        ),
         body: Center(
           child: Image.asset('images/algo.png'),
         ),
@@ -108,83 +104,181 @@ class PersonalInfoPage extends StatelessWidget {
 }
 
 
-class CourseManagementPage extends StatelessWidget {
+class CourseManagementPage extends StatefulWidget {
   const CourseManagementPage({super.key});
+
+  @override
+  _CourseManagementPageState createState() => _CourseManagementPageState();
+}
+
+class _CourseManagementPageState extends State<CourseManagementPage> {
+  
+  List<Widget> courseTiles = [];
+  final TextEditingController _courseNameController = TextEditingController();
+
+
+  @override
+  void initState() {
+    super.initState();
+    // Add the AddCourseTile initially
+    courseTiles.add(AddCourseTile(onAddCourse: _promptCourseName));
+  }
+
+  void _promptCourseName() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('請輸入課程名稱'),
+          content: TextField(
+            controller: _courseNameController,
+            decoration: InputDecoration(hintText: 'Course Name'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Add'),
+              onPressed: () {
+                _addCourseTile(_courseNameController.text);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  void _addCourseTile(String courseName) {
+    setState(() {
+      courseTiles.insert(courseTiles.length - 1, CourseTile(title: courseName));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(50),
-        child: GridView.count(
-          crossAxisCount: 4,
-          crossAxisSpacing: 75,
-          mainAxisSpacing: 75,
-          children: [
-            CourseTile(
-              title: '演算法',
-              // imageUrl: 'images/algo.png', // Replace with actual image URL
-              isDropdown: true,
+      backgroundColor: Color.fromARGB(255, 61, 61, 61),
+      body: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(50),
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4, // Number of columns
+                  crossAxisSpacing: 75, // Horizontal spacing between items
+                  mainAxisSpacing: 75, // Vertical spacing between items
+                ),
+                itemCount: courseTiles.length,
+                itemBuilder: (context, index) {
+                  return courseTiles[index];
+                },
+              ),
             ),
-            CourseTile(title: '演算法'),
-            CourseTile(title: '資料結構'),
-            CourseTile(title: '演算法'),
-            CourseTile(title: '資料結構'),
-            CourseTile(title: '演算法'),
-            AddCourseTile(),
-            
-          ],
-        ),
+          ),
+        ],
       ),
     );
+    
   }
 }
 
 class CourseTile extends StatelessWidget {
   final String title;
   final String? imageUrl;
-  final bool isDropdown;
 
-  CourseTile({required this.title, this.imageUrl, this.isDropdown = false});
+  CourseTile({required this.title, this.imageUrl});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (imageUrl != null)
-            Image.network(
-              imageUrl!,
-              height: 100,
-              width: 100,
-              fit: BoxFit.cover,
-            )
-          else
-            Icon(Icons.book, size: 50),
-          SizedBox(height: 8),
-          Text(title),
-          if (isDropdown) Icon(Icons.arrow_drop_down),
-        ],
+    return Container(
+      child: Card(
+        color: Color.fromARGB(255, 48, 48, 48),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (imageUrl != null)
+                Image.asset(imageUrl!)
+              else
+                Icon(
+                  Icons.book_outlined,
+                  size: 100,
+                  color: Colors.white, // Change 'Colors.red' to your desired color
+                ),
+
+              SizedBox(height: 4),
+
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(color: Colors.white), // Change 'Colors.red' to your desired color
+                  ),
+                  PopupMenuButton<String>(
+                    icon: Icon(
+                      Icons.arrow_drop_down,
+                      color: Colors.white, // Change 'Colors.red' to your desired color
+                    ),
+                    onSelected: (String newValue) {
+                      // Handle the selection of an item
+                      // You can add your logic here
+                      print('Selected: $newValue');
+                    },
+                    itemBuilder: (BuildContext context) {
+                      return <String>['編輯名稱', '刪除課程'].map<PopupMenuItem<String>>((String value) {
+                        return PopupMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
 class AddCourseTile extends StatelessWidget {
+
+final VoidCallback onAddCourse;
+
+const AddCourseTile({required this.onAddCourse});
+
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        // Handle add course action
-      },
+    return InkWell(
+      onTap: onAddCourse,
       child: Card(
+        color: Color.fromARGB(255, 48, 48, 48),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add, size: 50),
+            Icon(
+              Icons.add,
+              size: 100,
+              color: Colors.white, // Change 'Colors.red' to your desired color
+            ),
             SizedBox(height: 8),
-            Text('新增課程'),
+            Text(
+                    "新增課程",
+                    style: TextStyle(color: Colors.white), // Change 'Colors.red' to your desired color
+                  ),
           ],
         ),
       ),
