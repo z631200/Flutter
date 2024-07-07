@@ -101,7 +101,7 @@ class _FilePageState extends State<FilePage> {
   void addFileTile(String fileName) {
     setState(() {
       fileTiles.insert(
-        fileTiles.length - 1,
+        fileTiles.length,
         FileTile(title: fileName),
       );
       widget.courseManager.addFileToCourse(widget.courseName, fileName);
@@ -111,7 +111,7 @@ class _FilePageState extends State<FilePage> {
   void addOtherFileTile(String fileName) {
     setState(() {
       otherFileTiles.insert(
-        otherFileTiles.length - 1,
+        otherFileTiles.length,
         FileTile(title: fileName),
       );
       // Assuming you have a method to add supplementary files to the course
@@ -172,7 +172,7 @@ class _FilePageState extends State<FilePage> {
           Align(
             alignment: Alignment.centerLeft,
             child: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.white), // Set icon color to white
+              icon: Icon(Icons.arrow_back, color: Colors.white, size: 50,), // Set icon color to white
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -188,7 +188,7 @@ class _FilePageState extends State<FilePage> {
                     children: [
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.all(50),
+                          padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
                           child: GridView.builder(
                             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 4, // Number of columns
@@ -211,7 +211,7 @@ class _FilePageState extends State<FilePage> {
                     children: [
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.all(50),
+                          padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
                           child: GridView.builder(
                             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 4, // Number of columns

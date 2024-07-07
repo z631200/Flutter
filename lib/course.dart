@@ -65,6 +65,13 @@ class CourseManagementPageState extends State<CourseManagementPage> {
           break;
         }
       }
+      // Update the keys in the maps
+      if (courseFiles.containsKey(oldTitle)) {
+        courseFiles[newTitle] = courseFiles.remove(oldTitle)!;
+      }
+      if (otherCourseFiles.containsKey(oldTitle)) {
+        otherCourseFiles[newTitle] = otherCourseFiles.remove(oldTitle)!;
+      }
     });
   }
 
@@ -100,7 +107,6 @@ class CourseManagementPageState extends State<CourseManagementPage> {
     );
   }
 
-
   void deleteCourseTile(String courseName) {
     setState(() {
       courseTiles.remove(
@@ -108,6 +114,8 @@ class CourseManagementPageState extends State<CourseManagementPage> {
           (element) => element is CourseTile && element.title == courseName,
         ),
       );
+      courseFiles.remove(courseName);
+      otherCourseFiles.remove(courseName);
     });
   }
 
@@ -171,12 +179,14 @@ class _CourseTileState extends State<CourseTile> {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => FilePage(
-              courseName: _title,
-              files: widget.courseManager.getFilesForCourse(_title),
-              otherFiles: widget.courseManager.getOtherFilesForCourse(_title),
-              courseManager: widget.courseManager,
-            )),
+            MaterialPageRoute(
+              builder: (context) => FilePage(
+                courseName: _title,
+                files: widget.courseManager.getFilesForCourse(_title),
+                otherFiles: widget.courseManager.getOtherFilesForCourse(_title),
+                courseManager: widget.courseManager,
+              ),
+            ),
           );
         },
         child: Card(
