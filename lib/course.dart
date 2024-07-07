@@ -1,27 +1,63 @@
 import 'package:flutter/material.dart';
 import 'file.dart';
 
+const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
+
 class CourseManagementPage extends StatefulWidget {
   const CourseManagementPage({super.key});
 
   @override
-  _CourseManagementPageState createState() => _CourseManagementPageState();
+  CourseManagementPageState createState() => CourseManagementPageState();
 }
 
-class _CourseManagementPageState extends State<CourseManagementPage> {
-  
+class CourseManagementPageState extends State<CourseManagementPage> {
   List<Widget> courseTiles = [];
   final TextEditingController _courseNameController = TextEditingController();
-
+  Map<String, List<String>> courseFiles = {};
+  Map<String, List<String>> otherCourseFiles = {};
 
   @override
   void initState() {
     super.initState();
     // Add the AddCourseTile initially
-    courseTiles.add(AddCourseTile(onAddCourse: _promptCourseName));
+    courseTiles.add(AddCourseTile(onAddCourse: promptCourseName));
   }
 
-  void _updateCourseTileTitle(String oldTitle, String newTitle) {
+  void addCourseTile(String courseName) {
+    setState(() {
+      courseTiles.insert(
+        courseTiles.length,
+        CourseTile(
+          title: courseName,
+          courseManager: this,
+        ),
+      );
+      courseFiles[courseName] = []; // Initialize the file list for the new course
+      otherCourseFiles[courseName] = []; // Initialize the other file list for the new course
+    });
+  }
+
+  void addFileToCourse(String courseName, String fileName) {
+    setState(() {
+      courseFiles[courseName]?.add(fileName);
+    });
+  }
+
+  void addOtherFileToCourse(String courseName, String fileName) {
+    setState(() {
+      otherCourseFiles[courseName]?.add(fileName);
+    });
+  }
+
+  List<String> getFilesForCourse(String courseName) {
+    return courseFiles[courseName] ?? [];
+  }
+
+  List<String> getOtherFilesForCourse(String courseName) {
+    return otherCourseFiles[courseName] ?? [];
+  }
+
+  void updateCourseTileTitle(String oldTitle, String newTitle) {
     setState(() {
       for (var tile in courseTiles) {
         if (tile is CourseTile && tile.title == oldTitle) {
@@ -32,7 +68,9 @@ class _CourseManagementPageState extends State<CourseManagementPage> {
     });
   }
 
-  void _promptCourseName() {
+  void promptCourseName() {
+    if (!mounted) return;
+    _courseNameController.clear();
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -52,7 +90,7 @@ class _CourseManagementPageState extends State<CourseManagementPage> {
             TextButton(
               child: Text('加入'),
               onPressed: () {
-                _addCourseTile(_courseNameController.text);
+                addCourseTile(_courseNameController.text);
                 Navigator.of(context).pop();
               },
             ),
@@ -63,19 +101,7 @@ class _CourseManagementPageState extends State<CourseManagementPage> {
   }
 
 
-  void _addCourseTile(String courseName) {
-    setState(() {
-      courseTiles.insert(
-        courseTiles.length - 1,
-        CourseTile(
-          title: courseName,
-          courseManager: this,
-        ),
-      );
-    });
-  }
-
-  void _deleteCourseTile(String courseName) {
+  void deleteCourseTile(String courseName) {
     setState(() {
       courseTiles.remove(
         courseTiles.firstWhere(
@@ -84,12 +110,11 @@ class _CourseManagementPageState extends State<CourseManagementPage> {
       );
     });
   }
-  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 61, 61, 61),
+      backgroundColor: backgroundColor,
       body: Column(
         children: [
           Expanded(
@@ -111,20 +136,18 @@ class _CourseManagementPageState extends State<CourseManagementPage> {
         ],
       ),
     );
-    
   }
 }
 
 class CourseTile extends StatefulWidget {
   String title;
   final String? imageUrl;
-  final _CourseManagementPageState courseManager;
+  final CourseManagementPageState courseManager;
 
   CourseTile({required this.title, this.imageUrl, required this.courseManager});
 
   @override
   _CourseTileState createState() => _CourseTileState();
-
 }
 
 class _CourseTileState extends State<CourseTile> {
@@ -141,79 +164,82 @@ class _CourseTileState extends State<CourseTile> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-    try{
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => FilePage(courseName: _title)),
-        );
-      },
-      child: Card(
-        color: Color.fromARGB(255, 48, 48, 48),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (widget.imageUrl != null)
-                Image.asset(widget.imageUrl!)
-              else
-                Icon(
-                  Icons.book_outlined,
-                  size: 100,
-                  color: Colors.white,
-                ),
-              SizedBox(height: 4),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    _title,
-                    style: TextStyle(color: Colors.white),
+    try {
+      return InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => FilePage(
+              courseName: _title,
+              files: widget.courseManager.getFilesForCourse(_title),
+              otherFiles: widget.courseManager.getOtherFilesForCourse(_title),
+              courseManager: widget.courseManager,
+            )),
+          );
+        },
+        child: Card(
+          color: Color.fromARGB(255, 48, 48, 48),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (widget.imageUrl != null)
+                  Image.asset(widget.imageUrl!)
+                else
+                  Icon(
+                    Icons.book_outlined,
+                    size: 100,
+                    color: Colors.white,
                   ),
-                  PopupMenuButton<String>(
-                    icon: Icon(
-                      Icons.arrow_drop_down,
-                      color: Colors.white,
+                SizedBox(height: 4),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      _title,
+                      style: TextStyle(color: Colors.white),
                     ),
-                    onSelected: (String newValue) {
-                      if (newValue == '編輯名稱') {
-                        _showEditDialog(context);
-                      } else if (newValue == '刪除課程') {
-                        widget.courseManager._deleteCourseTile(_title); 
-                        print("Delete course");
-                      }
-                    },
-                    itemBuilder: (BuildContext context) {
-                      return <String>['編輯名稱', '刪除課程']
-                          .map<PopupMenuItem<String>>((String value) {
-                        return PopupMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList();
-                    },
-                  ),
-                ],
-              ),
-            ],
+                    PopupMenuButton<String>(
+                      icon: Icon(
+                        Icons.arrow_drop_down,
+                        color: Colors.white,
+                      ),
+                      onSelected: (String newValue) {
+                        if (newValue == '編輯名稱') {
+                          showEditDialog(context);
+                        } else if (newValue == '刪除課程') {
+                          print("Delete course: $_title");
+                          widget.courseManager.deleteCourseTile(_title);
+                        }
+                      },
+                      itemBuilder: (BuildContext context) {
+                        return <String>['編輯名稱', '刪除課程']
+                            .map<PopupMenuItem<String>>((String value) {
+                          return PopupMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList();
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
     } catch (e) {
       print('Error in CourseTile build: $e');
       return Container();
     }
   }
 
-  void _showEditDialog(BuildContext context) {
+  void showEditDialog(BuildContext context) {
     TextEditingController _controller = TextEditingController(text: _title);
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -235,7 +261,7 @@ class _CourseTileState extends State<CourseTile> {
               onPressed: () {
                 setState(() {
                   String newTitle = _controller.text;
-                  widget.courseManager._updateCourseTileTitle(_title, newTitle);
+                  widget.courseManager.updateCourseTileTitle(_title, newTitle);
                   _title = newTitle;
                 });
                 Navigator.of(context).pop();
@@ -249,11 +275,10 @@ class _CourseTileState extends State<CourseTile> {
 }
 
 class AddCourseTile extends StatelessWidget {
+  final VoidCallback onAddCourse;
+  final String text;
 
-final VoidCallback onAddCourse;
-
-const AddCourseTile({required this.onAddCourse});
-
+  const AddCourseTile({required this.onAddCourse, this.text = '新增課程'});
 
   @override
   Widget build(BuildContext context) {
@@ -271,9 +296,9 @@ const AddCourseTile({required this.onAddCourse});
             ),
             SizedBox(height: 8),
             Text(
-                    "新增課程",
-                    style: TextStyle(color: Colors.white), // Change 'Colors.red' to your desired color
-                  ),
+              text,
+              style: TextStyle(color: Colors.white), // Change 'Colors.red' to your desired color
+            ),
           ],
         ),
       ),
