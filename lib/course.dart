@@ -164,88 +164,91 @@ class _CourseTileState extends State<CourseTile> {
   @override
   void initState() {
     super.initState();
-    try {
-      _title = widget.title;
-      print('Title initialized: $_title');
-    } catch (e) {
-      print('Error in initState: $e');
+    _title = widget.title;
+  }
+
+  @override
+  void didUpdateWidget(CourseTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.title != widget.title) {
+      setState(() {
+        _title = widget.title;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    try {
-      return InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => FilePage(
-                courseName: _title,
-                files: widget.courseManager.getFilesForCourse(_title),
-                otherFiles: widget.courseManager.getOtherFilesForCourse(_title),
-                courseManager: widget.courseManager,
-              ),
-            ),
-          );
-        },
-        child: Card(
-          color: Color.fromARGB(255, 48, 48, 48),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (widget.imageUrl != null)
-                  Image.asset(widget.imageUrl!)
-                else
-                  Icon(
-                    Icons.book_outlined,
-                    size: 100,
-                    color: Colors.white,
-                  ),
-                SizedBox(height: 4),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      _title,
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    PopupMenuButton<String>(
-                      icon: Icon(
-                        Icons.arrow_drop_down,
-                        color: Colors.white,
-                      ),
-                      onSelected: (String newValue) {
-                        if (newValue == '編輯名稱') {
-                          showEditDialog(context);
-                        } else if (newValue == '刪除課程') {
-                          print("Delete course: $_title");
-                          widget.courseManager.deleteCourseTile(_title);
-                        }
-                      },
-                      itemBuilder: (BuildContext context) {
-                        return <String>['編輯名稱', '刪除課程']
-                            .map<PopupMenuItem<String>>((String value) {
-                          return PopupMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList();
-                      },
-                    ),
-                  ],
-                ),
-              ],
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FilePage(
+              courseName: _title,
+              files: widget.courseManager.getFilesForCourse(_title),
+              otherFiles: widget.courseManager.getOtherFilesForCourse(_title),
+              courseManager: widget.courseManager,
             ),
           ),
+        );
+      },
+      child: Card(
+        color: Color.fromARGB(255, 48, 48, 48),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (widget.imageUrl != null)
+                Image.asset(widget.imageUrl!)
+              else
+                Icon(
+                  Icons.book_outlined,
+                  size: 100,
+                  color: Colors.white,
+                ),
+              SizedBox(height: 4),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    _title,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  PopupMenuButton<String>(
+                    icon: Icon(
+                      Icons.arrow_drop_down,
+                      color: Colors.white,
+                    ),
+                    onSelected: (String newValue) {
+                      if (newValue == '編輯名稱') {
+                        showEditDialog(context);
+                      } else if (newValue == '刪除課程') {
+                        widget.courseManager.deleteCourseTile(_title);
+                      }
+                    },
+                    itemBuilder: (BuildContext context) {
+                      return <String>['編輯名稱', '刪除課程']
+                          .map<PopupMenuItem<String>>((String value) {
+                        return PopupMenuItem<String>(
+                          value: value,
+                          child: Text(
+                            value,
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        );
+                      }).toList();
+                    },
+                    color: Color.fromARGB(255, 61, 61, 61),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-      );
-    } catch (e) {
-      print('Error in CourseTile build: $e');
-      return Container();
-    }
+      ),
+    );
   }
 
   void showEditDialog(BuildContext context) {
