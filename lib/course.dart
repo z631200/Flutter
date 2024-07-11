@@ -195,26 +195,32 @@ class _CourseTileState extends State<CourseTile> {
       },
       child: Card(
         color: Color.fromARGB(255, 48, 48, 48),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (widget.imageUrl != null)
-                Image.asset(widget.imageUrl!)
-              else
-                Icon(
-                  Icons.book_outlined,
-                  size: 100,
-                  color: Colors.white,
-                ),
-              SizedBox(height: 4),
-              Row(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Spacer(), // Pushes the icon to the center vertically
+            if (widget.imageUrl != null)
+              Image.asset(widget.imageUrl!)
+            else
+              Icon(
+                Icons.book_outlined,
+                size: 100,
+                color: Colors.white,
+              ),
+            Spacer(), // Pushes the title and button to the bottom
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16.0), // Add padding from the bottom
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    _title,
-                    style: TextStyle(color: Colors.white),
+                  Flexible(
+                    child: Text(
+                      _title,
+                      style: TextStyle(color: Colors.white),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   ),
                   PopupMenuButton<String>(
                     icon: Icon(
@@ -244,8 +250,8 @@ class _CourseTileState extends State<CourseTile> {
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

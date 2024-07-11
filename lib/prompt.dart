@@ -10,40 +10,60 @@ class PromptManagementPage extends StatefulWidget {
 class _PromptManagementPageState extends State<PromptManagementPage> {
   TextEditingController _searchController = TextEditingController();
   List<Map<String, dynamic>> _items = [
-    {'title': 'Item 1', 'description': 'Description 1', 'isStarred': false},
-    {'title': 'Item 2', 'description': 'Description 2', 'isStarred': false},
-    {'title': 'Item 3', 'description': 'Description 3', 'isStarred': false},
-    {'title': 'Item 4', 'description': 'Description 4', 'isStarred': false},
-    {'title': 'Item 5', 'description': 'Description 5', 'isStarred': false},
+    {'title': '生成英文講稿', 'description': '幫我生成英文講稿', 'isStarred': false},
+    {'title': '本堂課程介紹', 'description': '幫我依據這頁的內容生成本堂課的課程介紹', 'isStarred': false},
+    {'title': '生成示意圖', 'description': '幫我依據這頁的內容生成示意圖', 'isStarred': false},
+    {'title': '產生隨堂測驗', 'description': '幫我依據這頁的內容產生隨堂測驗', 'isStarred': false},
+    {'title': '指定文字風格、語氣', 'description': '幫我用...的文字風格來生成英文講稿', 'isStarred': false},
   ];
+  
   List<Map<String, dynamic>> _filteredItems = [];
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
   @override
   void initState() {
     super.initState();
     _filteredItems = List.from(_items); // Ensure _filteredItems is a copy of _items
-    _searchController.addListener(_filterItems);
-  }
-
-  void _filterItems() {
-    setState(() {
-      _filteredItems = _items
-          .where((item) => item['title']
-              .toLowerCase()
-              .contains(_searchController.text.toLowerCase()))
-          .toList();
+    _searchController.addListener(() {
+      print('Current query: ${_searchController.text}'); // Debug print statement
+      _filterItems(_searchController.text);
     });
   }
 
-  void _toggleStar(int index) {
+  void _filterItems(String query) {
     setState(() {
-      _filteredItems[index]['isStarred'] = !_filteredItems[index]['isStarred'];
-      if (_filteredItems[index]['isStarred']) {
-        var item = _filteredItems.removeAt(index);
-        _filteredItems.insert(0, item);
+      if (query.isEmpty) {
+        _filteredItems = List.from(_items); // Reset to all items
       } else {
-        var item = _filteredItems.removeAt(index);
-        _filteredItems.add(item);
+        _filteredItems = _items.where((item) {
+          return item['title'].contains(query) || item['description'].contains(query);
+        }).toList();
+      }
+    });
+  }
+
+  void _starItem(int index) {
+    setState(() {
+      // Update the isStarred property
+      _filteredItems[index]['isStarred'] = !_filteredItems[index]['isStarred'];
+
+      // Move the item to the appropriate position
+      var starredItem = _filteredItems.removeAt(index);
+      if (starredItem['isStarred']) {
+        _filteredItems.insert(0, starredItem); // Move to top if starred
+      } else {
+        _filteredItems.add(starredItem); // Move to last if unstarred
+      }
+
+      // Update the original list
+      var originalIndex = _items.indexWhere((item) => item['title'] == starredItem['title']);
+      if (originalIndex != -1) {
+        _items.removeAt(originalIndex);
+        if (starredItem['isStarred']) {
+          _items.insert(0, starredItem); // Move to top if starred
+        } else {
+          _items.add(starredItem); // Move to last if unstarred
+        }
       }
     });
   }
@@ -51,46 +71,161 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
   void _editItem(int index) {
     TextEditingController titleController = TextEditingController(text: _filteredItems[index]['title']);
     TextEditingController descriptionController = TextEditingController(text: _filteredItems[index]['description']);
-
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Edit Item'),
+          title: Text('編輯Prompt'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                decoration: InputDecoration(labelText: 'Title'),
+                decoration: InputDecoration(labelText: '標題'),
               ),
               TextField(
                 controller: descriptionController,
-                decoration: InputDecoration(labelText: 'Description'),
+                decoration: InputDecoration(labelText: 'Prompt描述'),
               ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () {
-                setState(() {
-                  _filteredItems[index]['title'] = titleController.text;
-                  _filteredItems[index]['description'] = descriptionController.text;
-                });
                 Navigator.of(context).pop();
               },
-              child: Text('Save'),
+              child: Text('取消'),
             ),
             TextButton(
               onPressed: () {
+                setState(() {
+                  _filteredItems[index]['title'] = titleController.text;
+                  _filteredItems[index]['description'] = descriptionController.text;
+                  
+                  // Update the original list
+                  var originalIndex = _items.indexWhere((item) => item['title'] == _filteredItems[index]['title']);
+                  if (originalIndex != -1) {
+                    _items[originalIndex]['title'] = titleController.text;
+                    _items[originalIndex]['description'] = descriptionController.text;
+                  }
+                });
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: Text('儲存'),
             ),
           ],
         );
       },
     );
+  }
+
+  void _addItem() {
+    TextEditingController titleController = TextEditingController();
+    TextEditingController descriptionController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('新增Prompt'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: InputDecoration(labelText: '標題'),
+              ),
+              TextField(
+                controller: descriptionController,
+                decoration: InputDecoration(labelText: 'Prompt描述'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('取消'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  var newItem = {
+                    'title': titleController.text,
+                    'description': descriptionController.text,
+                    'isStarred': false
+                  };
+                  _items.add(newItem);
+                  _filteredItems.add(newItem);
+                  _listKey.currentState?.insertItem(_filteredItems.length - 1);
+                });
+                Navigator.of(context).pop();
+              },
+              child: Text('新增'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteItem(int index) {
+    setState(() {
+      // Remove the item from the filtered list
+      var deletedItem = _filteredItems.removeAt(index);
+      _listKey.currentState?.removeItem(
+        index,
+        (context, animation) => _buildItem(deletedItem, animation, index),
+      );
+
+      // Remove the item from the original list
+      var originalIndex = _items.indexWhere((item) => item['title'] == deletedItem['title']);
+      if (originalIndex != -1) {
+        _items.removeAt(originalIndex);
+      }
+    });
+  }
+
+  Widget _buildItem(Map<String, dynamic> item, Animation<double>? animation, int index) {
+    Widget listItem = ListTile(
+      title: Text(
+        item['title'],
+        style: TextStyle(color: Colors.white, fontSize: 18.0),
+      ),
+      subtitle: Text(
+        item['description'],
+        style: TextStyle(color: Colors.white70, fontSize: 14.0),
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: Icon(
+              item['isStarred'] ? Icons.star : Icons.star_border,
+              color: Colors.white54,
+            ),
+            onPressed: () => _starItem(index),
+          ),
+          IconButton(
+            icon: Icon(Icons.edit, color: Colors.white54),
+            onPressed: () => _editItem(index),
+          ),
+          IconButton(
+            icon: Icon(Icons.delete, color: Colors.white54),
+            onPressed: () => _deleteItem(index),
+          ),
+        ],
+      ),
+    );
+
+    if (animation != null) {
+      return SizeTransition(
+        sizeFactor: animation,
+        child: listItem,
+      );
+    } else {
+      return listItem;
+    }
   }
 
   @override
@@ -104,67 +239,60 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
     return Scaffold(
       backgroundColor: backgroundColor,
       body: Padding(
-        padding: const EdgeInsets.only(left: 100.0, top: 100.0, right: 100.0),
+        padding: const EdgeInsets.only(left: 100.0, top: 75.0, right: 100.0),
         child: Column(
           children: [
-            TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search...',
-                hintStyle: TextStyle(color: Colors.white54),
-                prefixIcon: Icon(Icons.search, color: Colors.white54),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                  borderSide: BorderSide(color: Colors.white54),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: '搜尋',
+                      hintStyle: TextStyle(color: Colors.white54),
+                      prefixIcon: Icon(Icons.search, color: Colors.white54),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                        borderSide: BorderSide(color: Colors.white54),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                        borderSide: BorderSide(color: Colors.white),
+                      ),
+                    ),
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                  borderSide: BorderSide(color: Colors.white),
+                SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: _addItem,
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                    backgroundColor: Colors.white, // Background color
+                    foregroundColor: backgroundColor, // Text color
+                    
+                  ),
+                  child: Text('新增Prompt'),
                 ),
-              ),
-              style: TextStyle(color: Colors.white),
+              ],
             ),
             SizedBox(height: 16.0),
             Expanded(
-              child: ListView.builder(
-                itemCount: _filteredItems.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(
-                      _filteredItems[index]['title'],
-                      style: TextStyle(color: Colors.white, fontSize: 18.0),
-                    ),
-                    subtitle: Text(
-                      _filteredItems[index]['description'],
-                      style: TextStyle(color: Colors.white70, fontSize: 14.0),
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            _filteredItems[index]['isStarred']
-                                ? Icons.star
-                                : Icons.star_border,
-                            color: Colors.white54,
-                          ),
-                          onPressed: () => _toggleStar(index),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.edit, color: Colors.white54),
-                          onPressed: () => _editItem(index),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.delete, color: Colors.white54),
-                          onPressed: () {
-                            // Handle delete action
-                          },
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+              child: _filteredItems.isEmpty
+                  ? Center(
+                      child: Text(
+                        '無符合項目',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    )
+                  : ListView.builder(
+                    itemCount: _filteredItems.length,
+                    itemBuilder: (context, index) {
+                      return _buildItem(_filteredItems[index], null, index);
+                    },
+                  ),
             ),
           ],
         ),
