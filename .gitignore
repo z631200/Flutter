@@ -52,3 +52,4 @@ app.*.map.json
 !lib/*
 # 可選：如果有特定文件或目錄在 src 目錄之外需要保留
 !README.md
+!.gitignore
