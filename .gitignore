@@ -41,3 +41,14 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+
+# 忽略所有文件
+*
+# 不忽略目錄
+!*/
+# 不忽略 src 目錄及其內容
+!lib/
+!lib/*
+# 可選：如果有特定文件或目錄在 src 目錄之外需要保留
+!README.md
