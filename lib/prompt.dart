@@ -16,7 +16,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
     {'title': '產生隨堂測驗', 'description': '幫我依據這頁的內容產生隨堂測驗', 'isStarred': false},
     {'title': '指定文字風格、語氣', 'description': '幫我用...的文字風格來生成英文講稿', 'isStarred': false},
   ];
-  
+
   List<Map<String, dynamic>> _filteredItems = [];
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
@@ -44,16 +44,20 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
 
   void _starItem(int index) {
     setState(() {
-      // Update the isStarred property
-      _filteredItems[index]['isStarred'] = !_filteredItems[index]['isStarred'];
+      var starredItem = _filteredItems[index];
+      bool isStarred = starredItem['isStarred'];
+      int removeIndex = index;
+      int insertIndex = isStarred ? _filteredItems.length - 1 : 0;
 
-      // Move the item to the appropriate position
-      var starredItem = _filteredItems.removeAt(index);
-      if (starredItem['isStarred']) {
-        _filteredItems.insert(0, starredItem); // Move to top if starred
-      } else {
-        _filteredItems.add(starredItem); // Move to last if unstarred
-      }
+      _filteredItems.removeAt(removeIndex);
+      _listKey.currentState?.removeItem(
+        removeIndex,
+        (context, animation) => _buildItem(starredItem, animation, removeIndex),
+      );
+
+      starredItem['isStarred'] = !isStarred;
+      _filteredItems.insert(insertIndex, starredItem);
+      _listKey.currentState?.insertItem(insertIndex);
 
       // Update the original list
       var originalIndex = _items.indexWhere((item) => item['title'] == starredItem['title']);
@@ -101,7 +105,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                 setState(() {
                   _filteredItems[index]['title'] = titleController.text;
                   _filteredItems[index]['description'] = descriptionController.text;
-                  
+
                   // Update the original list
                   var originalIndex = _items.indexWhere((item) => item['title'] == _filteredItems[index]['title']);
                   if (originalIndex != -1) {
@@ -177,7 +181,6 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
         index,
         (context, animation) => _buildItem(deletedItem, animation, index),
       );
-
       // Remove the item from the original list
       var originalIndex = _items.indexWhere((item) => item['title'] == deletedItem['title']);
       if (originalIndex != -1) {
@@ -217,7 +220,6 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
         ],
       ),
     );
-
     if (animation != null) {
       return SizeTransition(
         sizeFactor: animation,
@@ -272,7 +274,6 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                     ),
                     backgroundColor: Colors.white, // Background color
                     foregroundColor: backgroundColor, // Text color
-                    
                   ),
                   child: Text('新增Prompt'),
                 ),
@@ -287,12 +288,13 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                         style: TextStyle(color: Colors.white),
                       ),
                     )
-                  : ListView.builder(
-                    itemCount: _filteredItems.length,
-                    itemBuilder: (context, index) {
-                      return _buildItem(_filteredItems[index], null, index);
-                    },
-                  ),
+                  : AnimatedList(
+                      key: _listKey,
+                      initialItemCount: _filteredItems.length,
+                      itemBuilder: (context, index, animation) {
+                        return _buildItem(_filteredItems[index], animation, index);
+                      },
+                    ),
             ),
           ],
         ),
