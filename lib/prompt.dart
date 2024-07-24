@@ -65,15 +65,24 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: '搜尋',
+                      hintText: '按enter搜尋...',
                       hintStyle: TextStyle(color: Colors.white54),
-                      prefixIcon: IconButton(
-                        icon: Icon(Icons.search, color: Colors.white54),
-                        onPressed: () => _filterItems(_searchController.text),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(Icons.clear, color: Colors.white54),
-                        onPressed: _clearSearch,
+                      contentPadding: EdgeInsets.only(left: 20.0),
+                      suffixIcon: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.clear, color: Colors.white54),
+                            onPressed: _clearSearch,
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.search, color: Colors.white54),
+                            onPressed: () => _filterItems(_searchController.text),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(right: 10.0), // Add padding after search button
+                          ),
+                        ],
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30.0),
@@ -85,7 +94,11 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                       ),
                     ),
                     style: TextStyle(color: Colors.white),
+                    onSubmitted: (value) => _filterItems(value), // Handle 'Enter' key press
                   ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(right: 10.0), // Add padding after search button
                 ),
                 SizedBox(width: 10),
                 ElevatedButton(
