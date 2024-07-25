@@ -38,6 +38,9 @@ class _FilePageState extends State<FilePage> {
         courseName: widget.courseName,
         onDelete: deleteFileTile,
         onUpdate: updateFileName,
+        onTap: () {
+          navigateToPptPage();
+        },
       ));
     }
     for (var otherfile in widget.otherFiles) {
@@ -46,6 +49,9 @@ class _FilePageState extends State<FilePage> {
         courseName: widget.courseName,
         onDelete: deleteFileTile,
         onUpdate: updateFileName,
+        onTap: () {
+          navigateToPptPage();
+        },
       ));
     }
   }
@@ -71,14 +77,16 @@ class _FilePageState extends State<FilePage> {
       fileTiles.insert(
         fileTiles.length,
         FileTile(
+          key: UniqueKey(),
           title: fileName,
           courseName: widget.courseName,
           onDelete: deleteFileTile,
           onUpdate: updateFileName,
-          onTap: () => navigateToPptPage(),
+          onTap: () {
+            navigateToPptPage();
+          },
         ),
       );
-      // widget.fileManager.addFileToCourse(widget.courseName, fileName);
       widget.files.add(fileName);
     });
   }
@@ -266,12 +274,13 @@ class FileTile extends StatefulWidget {
   final Function()? onTap;
 
   FileTile({
+    Key? key,
     required this.title,
     required this.courseName,
     required this.onDelete,
     required this.onUpdate,
     this.onTap,
-  });
+  }) : super(key: key) ;
 
   @override
   _FileTileState createState() => _FileTileState();
@@ -299,7 +308,10 @@ class _FileTileState extends State<FileTile> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: widget.onTap,
+      onTap: () {
+        print("FileTile tapped");
+        widget.onTap?.call();
+      },
       child: Card(
         color: Color.fromARGB(255, 48, 48, 48),
         child: Column(

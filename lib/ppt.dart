@@ -1,16 +1,23 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
+const Color primaryColor = Color.fromARGB(255, 48, 48, 48);
 List<Widget> messages = [
   ChatMessage(
-    message: "您好，需要什麼幫助ggggggggggggggggggggggggggggggggggg呢？",
+    message: "您好，需要什麼幫助呢？",
+    isSentByMe: false,
+  ),
+  ChatMessage(
+    message: "測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD",
     isSentByMe: false,
   ),
 ];
 
 class PptPage extends StatefulWidget {
-  const PptPage({Key? key}) : super(key: key);
+  const PptPage({super.key});
 
   @override
   _PptPageState createState() => _PptPageState();
@@ -33,7 +40,7 @@ class _PptPageState extends State<PptPage> {
               updateMessagesCallback: _updateMessages,
             ),
           ),
-          VerticalDivider(width: 1, color: Colors.grey),
+          // VerticalDivider(width: 1, color: Colors.grey),
           Expanded(
             flex: 1,
             child: ChatSidebar(),
@@ -57,6 +64,127 @@ class SlideView extends StatefulWidget {
 
 class _SlideViewState extends State<SlideView> {
   final TextEditingController _controller = TextEditingController();
+  GlobalKey _textFieldKey = GlobalKey();
+  OverlayEntry? _overlayEntry;
+  List<String> _items = ["Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6", "Item 7", "Item 8", "Item 9", "Item 10"];
+  int hoveredIndex = -1;
+
+  void _toggleOverlay() {
+    if (_overlayEntry == null) {
+      final screenHeight = MediaQuery.of(context).size.height;
+      final appBarHeight = Scaffold.of(context).appBarMaxHeight ?? 0; // If using AppBar, subtract its height
+      final statusBarHeight = MediaQuery.of(context).padding.top;
+
+      final textFieldRenderBox = _textFieldKey.currentContext!.findRenderObject() as RenderBox;
+      final textFieldOffset = textFieldRenderBox.localToGlobal(Offset.zero);
+      final textFieldHeight = textFieldRenderBox.size.height;
+
+      final availableSpaceAbove = textFieldOffset.dy - statusBarHeight - appBarHeight;
+      final availableSpaceBelow = screenHeight - textFieldOffset.dy - textFieldHeight;
+
+      const int maxVisibleItems = 8;
+      final double listItemHeight = 50.0; // Assuming each list item has a fixed height of 50.0
+      final double listHeight = min(_items.length, maxVisibleItems) * listItemHeight;
+
+      // Determine if the overlay should appear above or below the TextField
+      final bool shouldShowAbove = listHeight > availableSpaceBelow && listHeight < availableSpaceAbove;
+
+      double overlayTop;
+      double overlayHeight;      
+
+      if (shouldShowAbove) {
+        // Show above TextField
+        overlayHeight = min(listHeight, availableSpaceAbove);
+        overlayTop = textFieldOffset.dy - overlayHeight;
+      } else {
+        // Show below TextField
+        overlayHeight = min(listHeight, availableSpaceBelow);
+        overlayTop = textFieldOffset.dy + textFieldHeight;
+      }
+
+      _overlayEntry = OverlayEntry(
+        builder: (context) => GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: _removeOverlay,
+          child: Container(
+            color: Colors.transparent,
+            child: Stack(
+              children: [
+                Positioned(
+                  top: overlayTop,
+                  left: textFieldOffset.dx,
+                  width: textFieldRenderBox.size.width,
+                  child: ClipRRect( // Apply ClipRRect here to include the Material widget
+                    borderRadius: BorderRadius.circular(10.0), // Ensure this matches the inner ClipRRect
+                    child: Material(
+                      elevation: 4.0,
+                      color: primaryColor, // Make Material widget transparent
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10.0), // Keep this for inner content
+                        child: Container(
+                          height: overlayHeight,
+                          color: Colors.transparent,
+                          child: ListView.builder(
+                            itemCount: _items.length,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                color: Colors.transparent, 
+                                child: ListTile(
+                                  title: Text(_items[index], style: TextStyle(color: Colors.white)),
+                                  onTap: () {
+                                    // Append the tapped item's text to the TextField's current text
+                                    setState(() {
+                                      _controller.text += " ${_items[index]}"; // Append the item text
+                                      _controller.selection = TextSelection.fromPosition(TextPosition(offset: _controller.text.length)); // Move cursor to the end
+                                    });
+                                    _removeOverlay(); // Optionally close the overlay after selection
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      Overlay.of(context)!.insert(_overlayEntry!);
+    } else {
+      _removeOverlay();
+    }
+  }
+
+  // Method to calculate the left position of the overlay to align with the TextField
+  double _calculateOverlayLeftPosition() {
+    final RenderBox renderBox = _textFieldKey.currentContext!.findRenderObject() as RenderBox;
+    final Offset offset = renderBox.localToGlobal(Offset.zero);
+    return offset.dx; // Return the left position for the overlay
+  }
+
+  // Method to calculate the width of the overlay to match the TextField
+  double _calculateOverlayWidth() {
+    final RenderBox renderBox = _textFieldKey.currentContext!.findRenderObject() as RenderBox;
+    return renderBox.size.width; // Return the width of the TextField
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  double _calculateOverlayPosition() {
+    final RenderBox renderBox = _textFieldKey.currentContext!.findRenderObject() as RenderBox;
+    final Offset offset = renderBox.localToGlobal(Offset.zero);
+
+    // Return the top position for the overlay, adjust based on your UI
+    return offset.dy - 210; // Example: TextField's Y position - Overlay Height
+  }
 
   void _sendMessage() {
     final String text = _controller.text;
@@ -83,7 +211,7 @@ class _SlideViewState extends State<SlideView> {
         ),
         Expanded(
           child: Container(
-            color: Colors.white,
+            color: backgroundColor,
             child: Center(
               child: Text(
                 'Slide Content Here',
@@ -115,23 +243,32 @@ class _SlideViewState extends State<SlideView> {
             children: <Widget>[
               Expanded(
                 child: TextField(
+                  key: _textFieldKey,
                   controller: _controller,
                   decoration: InputDecoration(
-                    hintText: "Type your message...",
-                    hintStyle: TextStyle(color: Colors.white), // Changed hint text color to white
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
+                    hintText: "Type your prompt...",
+                    hintStyle: TextStyle(color: Colors.white),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                    prefixIcon: Padding(
+                      padding: EdgeInsets.only(left: 8.0), // Adjust the padding value as needed
+                      child: IconButton(
+                        icon: Icon(FontAwesomeIcons.lightbulb, size: 25.0, color: Colors.white),
+                        onPressed: _toggleOverlay, // Method to open list of items
+                      ),
+                    ),
+                    suffixIcon: Padding(
+                      padding: EdgeInsets.only(right: 8.0), // Adjust the padding value as needed
+                      child: IconButton(
+                        icon: Icon(FontAwesomeIcons.paperPlane, size: 20.0, color: Colors.white),
+                        onPressed: _sendMessage, // Method to send message
+                      ),
                     ),
                   ),
                   style: TextStyle(color: Colors.white),
                   onSubmitted: (value) {
-                    _sendMessage(); // Call the _sendMessage function when 'Enter' is pressed
+                    _sendMessage();
                   },
                 ),
-              ),
-              IconButton(
-                icon: Icon(Icons.send, color: Colors.white), // Changed icon color to white
-                onPressed: _sendMessage,
               ),
             ],
           ),
