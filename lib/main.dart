@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ncu_emi/package/appbar.dart';
 import 'prompt.dart';
 import 'file.dart';
 import 'personal.dart';
@@ -55,6 +56,7 @@ class _NavigationState extends State<Navigation> {
   Widget build(BuildContext context) {
 
     return Scaffold(
+      appBar: appbar(),
       bottomNavigationBar: NavigationBar(
         backgroundColor: Color.fromARGB(255, 48, 48, 48),
         labelBehavior: labelBehavior,

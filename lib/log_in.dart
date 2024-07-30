@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ncu_emi/package/appbar.dart';
 
 
 
@@ -32,37 +33,60 @@ class _LoginPageState extends State<LogInPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('登录'),
-      ),
+      appBar: appbar(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: '邮箱',
-                border: OutlineInputBorder(),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Text('歡迎使用， EMI課程助教',
+                style: TextStyle(
+                  fontSize: 40,
+                ),
               ),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 16.0),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(
-                labelText: '密码',
-                border: OutlineInputBorder(),
+              const SizedBox(height: 60,),
+              SizedBox(
+                width: 800,
+                child: TextField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                    labelText: '電子郵件',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                ),
               ),
-              obscureText: true,
-            ),
-            const SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: _login,
-              child: const Text('登录'),
-            ),
-          ],
+              const SizedBox(height: 20.0),
+              SizedBox(
+                width: 800,
+                child: TextField(
+                  controller: _passwordController,
+                  decoration: const InputDecoration(
+                    labelText: '密碼',
+                    border: OutlineInputBorder(),
+                  ),
+                  obscureText: true,
+                ),
+              ),
+              const SizedBox(height: 16.0),
+              ElevatedButton(
+                onPressed: _login,//登入後端
+                child: const Text('登入'),
+              ),
+              const Text ('或'),
+              ElevatedButton(
+                onPressed: () {},//google log in
+                child: const Text('以google 帳號登入'),
+              ),
+              const SizedBox(height: 20,),
+              const Text('沒有帳號嗎?點此',
+              ),
+              TextButton(
+                  onPressed:() {},
+                  child: const Text('註冊')),
+            ],
+          ),
         ),
       ),
     );
