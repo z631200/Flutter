@@ -4,6 +4,7 @@ import 'file.dart';
 import 'personal.dart';
 import 'course.dart';
 import 'package:ncu_emi/log_in.dart';
+import 'package:ncu_emi/package/appbar.dart';
 
 void main() => runApp(MyApp());
 
@@ -55,8 +56,11 @@ class _NavigationState extends State<Navigation> {
   Widget build(BuildContext context) {
 
     return Scaffold(
+
+      appBar:appbar(),
+
       bottomNavigationBar: NavigationBar(
-        backgroundColor: Color.fromARGB(255, 48, 48, 48),
+        backgroundColor: const Color.fromARGB(255, 48, 48, 48),
         labelBehavior: labelBehavior,
         selectedIndex: currentPageIndex,
         onDestinationSelected: (int index) {
