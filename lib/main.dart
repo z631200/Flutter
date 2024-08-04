@@ -5,6 +5,7 @@ import 'file.dart';
 import 'personal.dart';
 import 'course.dart';
 import 'package:ncu_emi/log_in.dart';
+import 'package:ncu_emi/register.dart';
 
 void main() => runApp(MyApp());
 
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => LogInPage(),
         '/navigation': (context) => const Navigation(),
+        '/register': (context) => RegisterPage(),
       },
 
       debugShowCheckedModeBanner: false,

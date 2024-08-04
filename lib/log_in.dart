@@ -83,7 +83,9 @@ class _LoginPageState extends State<LogInPage> {
               const Text('沒有帳號嗎?點此',
               ),
               TextButton(
-                  onPressed:() {},
+                  onPressed:() {
+                    Navigator.pushNamed(context, '/register');
+                  },
                   child: const Text('註冊')),
             ],
           ),
