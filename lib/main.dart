@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:ncu_emi/package/appbar.dart';
 import 'prompt.dart';
 import 'file.dart';
 import 'personal.dart';
 import 'course.dart';
 import 'package:ncu_emi/log_in.dart';
-import 'package:ncu_emi/package/appbar.dart';
+
+import 'package:ncu_emi/register.dart';
+
 
 void main() => runApp(MyApp());
 
@@ -17,6 +20,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => LogInPage(),
         '/navigation': (context) => const Navigation(),
+        '/register': (context) => RegisterPage(),
       },
 
       debugShowCheckedModeBanner: false,
@@ -56,9 +60,7 @@ class _NavigationState extends State<Navigation> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-
-      appBar:appbar(),
-
+      appBar: appbar(),
       bottomNavigationBar: NavigationBar(
         backgroundColor: const Color.fromARGB(255, 48, 48, 48),
         labelBehavior: labelBehavior,
