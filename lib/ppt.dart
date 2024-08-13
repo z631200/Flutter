@@ -1,7 +1,7 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'dart:io';
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 const Color primaryColor = Color.fromARGB(255, 48, 48, 48);
@@ -66,13 +66,24 @@ class _SlideViewState extends State<SlideView> {
   final TextEditingController _controller = TextEditingController();
   GlobalKey _textFieldKey = GlobalKey();
   OverlayEntry? _overlayEntry;
-  List<String> _items = ["Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6", "Item 7", "Item 8", "Item 9", "Item 10"];
-  int hoveredIndex = -1;
+  List<Map<String, String>> _items = [
+    {'title': '生成英文講稿', 'description': '幫我生成英文講稿'},
+    {'title': '本堂課程介紹', 'description': '幫我依據這頁的內容生成本堂課的課程介紹'},
+    {'title': '生成示意圖', 'description': '幫我依據這頁的內容生成示意圖'},
+    {'title': '產生隨堂測驗', 'description': '幫我依據這頁的內容產生隨堂測驗'},
+    {'title': '指定文字風格、語氣', 'description': '幫我用...的文字風格來生成英文講稿'},
+    {'title': '生成英文講稿', 'description': '幫我生成英文講稿'},
+    {'title': '本堂課程介紹', 'description': '幫我依據這頁的內容生成本堂課的課程介紹'},
+    {'title': '生成示意圖', 'description': '幫我依據這頁的內容生成示意圖'},
+    {'title': '產生隨堂測驗', 'description': '幫我依據這頁的內容產生隨堂測驗'},
+    {'title': '指定文字風格、語氣', 'description': '幫我用...的文字風格來生成英文講稿'},
+  ];
+
 
   void _toggleOverlay() {
     if (_overlayEntry == null) {
       final screenHeight = MediaQuery.of(context).size.height;
-      final appBarHeight = Scaffold.of(context).appBarMaxHeight ?? 0; // If using AppBar, subtract its height
+      final appBarHeight = Scaffold.of(context).appBarMaxHeight ?? 0; //  If using AppBar, subtract its height
       final statusBarHeight = MediaQuery.of(context).padding.top;
 
       final textFieldRenderBox = _textFieldKey.currentContext!.findRenderObject() as RenderBox;
@@ -83,8 +94,8 @@ class _SlideViewState extends State<SlideView> {
       final availableSpaceBelow = screenHeight - textFieldOffset.dy - textFieldHeight;
 
       const int maxVisibleItems = 8;
-      final double listItemHeight = 50.0; // Assuming each list item has a fixed height of 50.0
-      final double listHeight = min(_items.length, maxVisibleItems) * listItemHeight;
+      final double listItemHeight = 65.0;
+      final double listHeight = min(_items.length * listItemHeight, maxVisibleItems * listItemHeight);
 
       // Determine if the overlay should appear above or below the TextField
       final bool shouldShowAbove = listHeight > availableSpaceBelow && listHeight < availableSpaceAbove;
@@ -128,16 +139,16 @@ class _SlideViewState extends State<SlideView> {
                             itemCount: _items.length,
                             itemBuilder: (context, index) {
                               return Container(
-                                color: Colors.transparent, 
+                                color: Colors.transparent,
                                 child: ListTile(
-                                  title: Text(_items[index], style: TextStyle(color: Colors.white)),
+                                  title: Text(_items[index]['title']!, style: TextStyle(color: Colors.white)),
+                                  subtitle: Text(_items[index]['description']!, style: TextStyle(color: Colors.white70)),
                                   onTap: () {
-                                    // Append the tapped item's text to the TextField's current text
                                     setState(() {
-                                      _controller.text += " ${_items[index]}"; // Append the item text
-                                      _controller.selection = TextSelection.fromPosition(TextPosition(offset: _controller.text.length)); // Move cursor to the end
+                                      _controller.text += " ${_items[index]['description']}";
+                                      _controller.selection = TextSelection.fromPosition(TextPosition(offset: _controller.text.length));
                                     });
-                                    _removeOverlay(); // Optionally close the overlay after selection
+                                    _removeOverlay();
                                   },
                                 ),
                               );
@@ -214,9 +225,9 @@ class _SlideViewState extends State<SlideView> {
             color: backgroundColor,
             child: Center(
               child: Text(
-                'Slide Content Here',
-                style: TextStyle(fontSize: 24),
-              ),
+                      'Loading slides...',
+                      style: TextStyle(fontSize: 24),
+                    ),
             ),
           ),
         ),
@@ -229,7 +240,6 @@ class _SlideViewState extends State<SlideView> {
                 icon: Icon(Icons.arrow_back),
                 onPressed: () {},
               ),
-              Text('2 / 36'),
               IconButton(
                 icon: Icon(Icons.arrow_forward),
                 onPressed: () {},

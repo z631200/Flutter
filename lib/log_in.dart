@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ncu_emi/package/appbar.dart';
 
 
 
@@ -33,7 +32,6 @@ class _LoginPageState extends State<LogInPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: appbar(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Center(
