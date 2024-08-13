@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'dart:io';
+import 'package:pdfx/pdfx.dart';
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 const Color primaryColor = Color.fromARGB(255, 48, 48, 48);
@@ -79,6 +79,9 @@ class _SlideViewState extends State<SlideView> {
     {'title': '指定文字風格、語氣', 'description': '幫我用...的文字風格來生成英文講稿'},
   ];
 
+  final pdfController = PdfController(
+    document: PdfDocument.openAsset('assets/test2.pdf'),
+  );
 
   void _toggleOverlay() {
     if (_overlayEntry == null) {
@@ -223,11 +226,13 @@ class _SlideViewState extends State<SlideView> {
         Expanded(
           child: Container(
             color: backgroundColor,
-            child: Center(
-              child: Text(
-                      'Loading slides...',
-                      style: TextStyle(fontSize: 24),
-                    ),
+            child: PdfView(
+              controller: pdfController,
+              renderer: (PdfPage page) => page.render(
+                width: page.width,
+                height: page.height,
+                format: PdfPageImageFormat.jpeg,
+              ),
             ),
           ),
         ),
@@ -237,12 +242,34 @@ class _SlideViewState extends State<SlideView> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               IconButton(
-                icon: Icon(Icons.arrow_back),
-                onPressed: () {},
+                icon: Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () async {
+                  final currentPage = pdfController.page;
+                  if (currentPage > 1) {
+                    pdfController.jumpToPage(currentPage - 1);
+                  }
+                },
+              ),
+              PdfPageNumber(
+                controller: pdfController,
+                builder: (context, loadingState, page, pagesCount) {
+                  return Container(
+                    alignment: Alignment.center,
+                    child: Text(
+                      '$page/${pagesCount ?? 0}',
+                      style: TextStyle(fontSize: 22, color: Colors.white),
+                    ),
+                  );
+                },
               ),
               IconButton(
-                icon: Icon(Icons.arrow_forward),
-                onPressed: () {},
+                icon: Icon(Icons.arrow_forward, color: Colors.white),
+                onPressed: () async {
+                  final currentPage = pdfController.page;
+                  if (currentPage < (pdfController.pagesCount ?? 0)) {
+                    pdfController.jumpToPage(currentPage + 1);
+                  }
+                },
               ),
             ],
           ),
