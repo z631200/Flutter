@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ncu_emi/package/appbar.dart';
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -43,7 +42,6 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: appbar(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Center(
